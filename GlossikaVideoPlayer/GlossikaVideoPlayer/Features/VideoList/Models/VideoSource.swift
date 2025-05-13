@@ -29,6 +29,7 @@ enum VideoSource: Int, CaseIterable {
     case volkswagenGTIReview
     case weAreGoingOnBullrun
     case whatCareCanYouGetForAGrand
+    case testError
 }
 
 // MARK: VideoDetail
@@ -62,6 +63,8 @@ extension VideoSource: VideoDetail {
 
         case .whatCareCanYouGetForAGrand:
             return "The Smoking Tire meets up with Chris and Jorge from CarsForAGrand.com to see just how far $1,000 can go when looking for a car.The Smoking Tire meets up with Chris and Jorge from CarsForAGrand.com to see just how far $1,000 can go when looking for a car."
+        case .testError:
+            return "TestError Description"
         }
     }
 
@@ -80,7 +83,7 @@ extension VideoSource: VideoDetail {
             return URL(string: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4")
 
         case .subaruOutbackOnStreetAndDirt:
-            return URL(string: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackOnStreetAndDirt.mp4")!
+            return URL(string: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackOnStreetAndDirt.mp4")
 
         case .tearsOfSteel:
             return URL(string: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4")
@@ -92,7 +95,9 @@ extension VideoSource: VideoDetail {
             return URL(string: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4")
 
         case .whatCareCanYouGetForAGrand:
-            return URL(string: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WhatCarCanYouGetForAGrand.mp4")!
+            return URL(string: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WhatCarCanYouGetForAGrand.mp4")
+        case .testError:
+            return URL(string: "")
         }
     }
 
@@ -124,6 +129,9 @@ extension VideoSource: VideoDetail {
 
         case .whatCareCanYouGetForAGrand:
             return "By Garage419"
+            
+        case .testError:
+            return "By testError"
         }
     }
 
@@ -155,6 +163,9 @@ extension VideoSource: VideoDetail {
 
         case .whatCareCanYouGetForAGrand:
             return "images/WhatCarCanYouGetForAGrand.jpg"
+            
+        case .testError:
+            return "testErrorThumb.jpg"
         }
     }
 
@@ -186,6 +197,9 @@ extension VideoSource: VideoDetail {
 
         case .whatCareCanYouGetForAGrand:
             return "What care can you get for a grand?"
+            
+        case .testError:
+            return "TestError Title"
         }
     }
 

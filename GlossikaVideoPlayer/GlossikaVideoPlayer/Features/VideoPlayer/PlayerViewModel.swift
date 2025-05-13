@@ -1,5 +1,5 @@
 //
-//  PlayerViewModel.swift
+//  PlayerContainerViewModel.swift
 //  GlossikaVideoPlayer
 //
 //  Created by Yu Li Lin on 2025/5/13.
@@ -9,13 +9,11 @@ import AVFoundation
 import Combine
 import Foundation
 
-// MARK: - PlayerViewModel
+// MARK: - PlayerContainerViewModel
 
-class PlayerViewModel: ObservableObject {
+class PlayerContainerViewModel: ObservableObject {
     // MARK: - Public Properties
-
     // MARK: - Input
-
     let player: AVPlayer
     let playPauseTapped = PassthroughSubject<Void, Never>()
     let rewindTapped = PassthroughSubject<Void, Never>()
@@ -23,14 +21,12 @@ class PlayerViewModel: ObservableObject {
     let seekToTime = PassthroughSubject<Double, Never>()
 
     // MARK: - Output
-
     @Published var isPlaying = false
     @Published var currentTime: Double = 0
     @Published var duration: Double = 1
     @Published var bufferProgress: Double = 0
 
     // MARK: - Private Properties
-
     private var cancellables = Set<AnyCancellable>()
     private var timeObserver: Any?
 
@@ -50,7 +46,7 @@ class PlayerViewModel: ObservableObject {
 
 // MARK: - Bind
 
-private extension PlayerViewModel {
+private extension PlayerContainerViewModel {
     func bind() {
         playPauseTapped
             .sink { [weak self] in
@@ -88,7 +84,7 @@ private extension PlayerViewModel {
 }
 
 //MARK: - Private Methods
-private extension PlayerViewModel {
+private extension PlayerContainerViewModel {
     func observerTime() {
         timeObserver = player.addPeriodicTimeObserver(forInterval: CMTime(seconds: 0.5, preferredTimescale: 600), queue: .main, using: { [weak self] time in
             guard let self = self else { return }

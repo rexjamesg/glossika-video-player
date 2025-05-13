@@ -47,5 +47,7 @@ struct VideoListCell: View {
 struct VideoListCell_Previews: PreviewProvider {
     static var previews: some View {
         VideoListCell(item: VideoItem.mock)
+            .previewLayout(/*@START_MENU_TOKEN@*/ .sizeThatFits/*@END_MENU_TOKEN@*/)
+            .background(.gray.opacity(0.1))
     }
 }
