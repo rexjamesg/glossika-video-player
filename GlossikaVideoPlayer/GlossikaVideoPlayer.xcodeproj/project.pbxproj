@@ -8,17 +8,27 @@
 
 /* Begin PBXBuildFile section */
 		51339E292DD3399B00238B19 /* GlossikaVideoPlayerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51339E282DD3399B00238B19 /* GlossikaVideoPlayerApp.swift */; };
-		51339E2B2DD3399B00238B19 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51339E2A2DD3399B00238B19 /* ContentView.swift */; };
+		51339E2B2DD3399B00238B19 /* VideoListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51339E2A2DD3399B00238B19 /* VideoListView.swift */; };
 		51339E2D2DD3399D00238B19 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 51339E2C2DD3399D00238B19 /* Assets.xcassets */; };
 		51339E302DD3399D00238B19 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 51339E2F2DD3399D00238B19 /* Preview Assets.xcassets */; };
+		51339E3A2DD33B5400238B19 /* VideoSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51339E392DD33B5400238B19 /* VideoSource.swift */; };
+		51339E3C2DD33D1C00238B19 /* VideoItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51339E3B2DD33D1C00238B19 /* VideoItem.swift */; };
+		51339E402DD33D7300238B19 /* VideoListViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51339E3F2DD33D7300238B19 /* VideoListViewModel.swift */; };
+		51339E452DD3429100238B19 /* VideoListCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51339E442DD3429100238B19 /* VideoListCell.swift */; };
+		51339E4B2DD3452800238B19 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 51339E4A2DD3452800238B19 /* Kingfisher */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		51339E252DD3399B00238B19 /* GlossikaVideoPlayer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GlossikaVideoPlayer.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		51339E282DD3399B00238B19 /* GlossikaVideoPlayerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlossikaVideoPlayerApp.swift; sourceTree = "<group>"; };
-		51339E2A2DD3399B00238B19 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		51339E2A2DD3399B00238B19 /* VideoListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoListView.swift; sourceTree = "<group>"; };
 		51339E2C2DD3399D00238B19 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		51339E2F2DD3399D00238B19 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		51339E392DD33B5400238B19 /* VideoSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoSource.swift; sourceTree = "<group>"; };
+		51339E3B2DD33D1C00238B19 /* VideoItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoItem.swift; sourceTree = "<group>"; };
+		51339E3F2DD33D7300238B19 /* VideoListViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoListViewModel.swift; sourceTree = "<group>"; };
+		51339E412DD3415100238B19 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		51339E442DD3429100238B19 /* VideoListCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoListCell.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -26,6 +36,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				51339E4B2DD3452800238B19 /* Kingfisher in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -51,8 +62,9 @@
 		51339E272DD3399B00238B19 /* GlossikaVideoPlayer */ = {
 			isa = PBXGroup;
 			children = (
-				51339E282DD3399B00238B19 /* GlossikaVideoPlayerApp.swift */,
-				51339E2A2DD3399B00238B19 /* ContentView.swift */,
+				51339E412DD3415100238B19 /* Info.plist */,
+				51339E3E2DD33D4A00238B19 /* App */,
+				51339E362DD33B2100238B19 /* Features */,
 				51339E2C2DD3399D00238B19 /* Assets.xcassets */,
 				51339E2E2DD3399D00238B19 /* Preview Content */,
 			);
@@ -65,6 +77,66 @@
 				51339E2F2DD3399D00238B19 /* Preview Assets.xcassets */,
 			);
 			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		51339E362DD33B2100238B19 /* Features */ = {
+			isa = PBXGroup;
+			children = (
+				51339E372DD33B2800238B19 /* VideoList */,
+			);
+			path = Features;
+			sourceTree = "<group>";
+		};
+		51339E372DD33B2800238B19 /* VideoList */ = {
+			isa = PBXGroup;
+			children = (
+				51339E422DD3427C00238B19 /* Views */,
+				51339E3D2DD33D2800238B19 /* ViewModel */,
+				51339E382DD33B3A00238B19 /* Models */,
+			);
+			path = VideoList;
+			sourceTree = "<group>";
+		};
+		51339E382DD33B3A00238B19 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				51339E392DD33B5400238B19 /* VideoSource.swift */,
+				51339E3B2DD33D1C00238B19 /* VideoItem.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		51339E3D2DD33D2800238B19 /* ViewModel */ = {
+			isa = PBXGroup;
+			children = (
+				51339E3F2DD33D7300238B19 /* VideoListViewModel.swift */,
+			);
+			path = ViewModel;
+			sourceTree = "<group>";
+		};
+		51339E3E2DD33D4A00238B19 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				51339E282DD3399B00238B19 /* GlossikaVideoPlayerApp.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		51339E422DD3427C00238B19 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				51339E432DD3428400238B19 /* Components */,
+				51339E2A2DD3399B00238B19 /* VideoListView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		51339E432DD3428400238B19 /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				51339E442DD3429100238B19 /* VideoListCell.swift */,
+			);
+			path = Components;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -83,6 +155,9 @@
 			dependencies = (
 			);
 			name = GlossikaVideoPlayer;
+			packageProductDependencies = (
+				51339E4A2DD3452800238B19 /* Kingfisher */,
+			);
 			productName = GlossikaVideoPlayer;
 			productReference = 51339E252DD3399B00238B19 /* GlossikaVideoPlayer.app */;
 			productType = "com.apple.product-type.application";
@@ -111,6 +186,9 @@
 				Base,
 			);
 			mainGroup = 51339E1C2DD3399B00238B19;
+			packageReferences = (
+				51339E492DD3452800238B19 /* XCRemoteSwiftPackageReference "Kingfisher" */,
+			);
 			productRefGroup = 51339E262DD3399B00238B19 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -137,8 +215,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				51339E2B2DD3399B00238B19 /* ContentView.swift in Sources */,
+				51339E3C2DD33D1C00238B19 /* VideoItem.swift in Sources */,
+				51339E2B2DD3399B00238B19 /* VideoListView.swift in Sources */,
 				51339E292DD3399B00238B19 /* GlossikaVideoPlayerApp.swift in Sources */,
+				51339E402DD33D7300238B19 /* VideoListViewModel.swift in Sources */,
+				51339E3A2DD33B5400238B19 /* VideoSource.swift in Sources */,
+				51339E452DD3429100238B19 /* VideoListCell.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -269,6 +351,7 @@
 				DEVELOPMENT_ASSET_PATHS = "\"GlossikaVideoPlayer/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = GlossikaVideoPlayer/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -297,6 +380,7 @@
 				DEVELOPMENT_ASSET_PATHS = "\"GlossikaVideoPlayer/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = GlossikaVideoPlayer/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -337,6 +421,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		51339E492DD3452800238B19 /* XCRemoteSwiftPackageReference "Kingfisher" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/onevcat/Kingfisher.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 7.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		51339E4A2DD3452800238B19 /* Kingfisher */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 51339E492DD3452800238B19 /* XCRemoteSwiftPackageReference "Kingfisher" */;
+			productName = Kingfisher;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 51339E1D2DD3399B00238B19 /* Project object */;
 }
