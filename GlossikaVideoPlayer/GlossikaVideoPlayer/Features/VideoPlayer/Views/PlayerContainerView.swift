@@ -5,15 +5,17 @@
 //  Created by Yu Li Lin on 2025/5/13.
 //
 
+import Combine
 import SwiftUI
 
 // MARK: - PlayerContainerView
 
 struct PlayerContainerView: View {
+    @Environment(\.dismiss) private var dismiss
     @StateObject var viewModel: PlayerContainerViewModel
     @State var showControls = true
     @State var autoHideControlsTask: DispatchWorkItem?
-    @Environment(\.dismiss) private var dismiss
+    @State private var orientation = UIDeviceOrientation.unknown
 
     init(url: URL) {
         _viewModel = StateObject(wrappedValue: PlayerContainerViewModel(url: url))
@@ -27,7 +29,7 @@ struct PlayerContainerView: View {
                     Spacer()
                     ZStack {
                         setVideoPlayerView(geometry: geometry)
-                        
+
                         if showControls {
                             setPlayerControlsViewBase(geometry: geometry)
                                 .transition(.opacity)
@@ -35,8 +37,8 @@ struct PlayerContainerView: View {
                     }
                     Spacer()
                 }
-                
-                if showControls {
+
+                if showControls && !viewModel.isFullScreen {
                     setCloseButton()
                         .transition(.opacity)
                 }
@@ -46,10 +48,30 @@ struct PlayerContainerView: View {
                 toggleControls()
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+            .onAppear {
+                AppDelegate.shared.orientationLock = .all
+            }
+            .onDisappear {
+                AppDelegate.shared.orientationLock = .portrait
+            }
+            .onReceive(viewModel.orientationToRotate.compactMap { $0 }) { orientation in
+                AppDelegate.shared.rotateScreen(to: orientation)
+            }
+            .onReceive(viewModel.resetAutoHide) { _ in
+                scheduleAutoHideControls()
+            }
         }
-        .onChange(of: viewModel.isReadyToPlay, perform: { newValue in
-            if newValue {
+        .onChange(of: viewModel.isSeeking, perform: { isSeeking in
+            if isSeeking {
+                autoHideControlsTask?.cancel()
+            } else {
+                scheduleAutoHideControls()
+            }
+        })
+        .onChange(of: viewModel.isReadyToPlay, perform: { isReadyToPlay in
+            if isReadyToPlay {
                 viewModel.playPauseTapped.send()
+                scheduleAutoHideControls()
             }
         })
     }
@@ -75,17 +97,33 @@ private extension PlayerContainerView {
             .padding(.top, 20)
             .padding(.leading, 20)
     }
-    
+
     func toggleControls() {
         withAnimation { showControls.toggle() }
 
         autoHideControlsTask?.cancel()
         if showControls {
-            let task = DispatchWorkItem {
-                withAnimation { showControls = false }
+            scheduleAutoHideControls()
+        }
+    }
+
+    func scheduleAutoHideControls() {
+        autoHideControlsTask?.cancel()
+
+        // 拖曳中不排程，防止拖曳過程控制列消失
+        guard !viewModel.isSeeking else { return }
+
+        let task = DispatchWorkItem {
+            withAnimation {
+                showControls = false
             }
-            autoHideControlsTask = task
-            DispatchQueue.main.asyncAfter(deadline: .now() + 3, execute: task)
+        }
+        autoHideControlsTask = task
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+            // 拖曳結束才執行
+            if !viewModel.isSeeking {
+                task.perform()
+            }
         }
     }
 }
@@ -99,12 +137,11 @@ struct PlayerContainerView_Previews: PreviewProvider {
     }
 }
 
-
 // MARK: - PlayerSlider
 
 struct PlayerSlider: View {
     @ObservedObject var viewModel: PlayerContainerViewModel
-    
+
     var body: some View {
         Slider(value: Binding(
             get: {
@@ -118,6 +155,8 @@ struct PlayerSlider: View {
             }
         ), in: 0 ... max(viewModel.duration, 1),
         onEditingChanged: { editing in
+            viewModel.setSeekingStatus.send(editing)
+            print("editing", editing)
             if editing {
                 viewModel.pauseTapped.send()
             } else {

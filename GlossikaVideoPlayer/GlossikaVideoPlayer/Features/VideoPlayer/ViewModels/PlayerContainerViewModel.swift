@@ -8,11 +8,7 @@
 import AVFoundation
 import Combine
 import Foundation
-
-
-extension PlayerContainerViewModel {
-    static let mock = PlayerContainerViewModel(url: URL(string: "https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/720/Big_Buck_Bunny_720_10s_2MB.mp4")!)
-}
+import UIKit
 
 // MARK: - PlayerContainerViewModel
 
@@ -22,38 +18,31 @@ class PlayerContainerViewModel: ObservableObject {
     var player: AVPlayer { playerService.player }
 
     // MARK: - Input
+    let resetAutoHide = PassthroughSubject<Void, Never>()
+    let toggleFullScreenTapped = PassthroughSubject<Void, Never>()
+    let requestRotate = PassthroughSubject<UIInterfaceOrientationMask, Never>()
+    let setSeekingStatus = PassthroughSubject<Bool, Never>()
     
-    var playTapped: PassthroughSubject<Void, Never> {
-        playerService.playTapped
-    }
-
-    var pauseTapped: PassthroughSubject<Void, Never> {
-        playerService.pauseTapped
-    }
-
-    var fastForwardTapped: PassthroughSubject<Void, Never> {
-        playerService.fastForwardTapped
-    }
-
-    var rewindTapped: PassthroughSubject<Void, Never> {
-        playerService.rewindTapped
-    }
-
-    var playPauseTapped: PassthroughSubject<Void, Never> {
-        playerService.playPauseTapped
-    }
-
-    var seekToTime: PassthroughSubject<Double, Never> {
-        playerService.seekToTime
-    }
+    let playTapped = PassthroughSubject<Void, Never>()
+    let pauseTapped = PassthroughSubject<Void, Never>()
+    let fastForwardTapped = PassthroughSubject<Void, Never>()
+    let rewindTapped = PassthroughSubject<Void, Never>()
+    let playPauseTapped = PassthroughSubject<Void, Never>()
+    let seekToTime = PassthroughSubject<Double, Never>()
+    
 
     // MARK: - Output
 
-    @Published var bufferProgress: Double = 0
-    @Published var isPlaying: Bool = false
-    @Published var currentTime: Double = 0
-    @Published var duration: Double = 1
-    @Published var isReadyToPlay = false
+    let orientationToRotate = PassthroughSubject<UIInterfaceOrientationMask, Never>()
+    /// 是否是全螢幕（橫向）狀態
+    @Published private(set) var isFullScreen = false
+    @Published private(set) var bufferProgress: Double = 0
+    @Published private(set) var isLoading = true
+    @Published private(set) var isPlaying: Bool = false
+    @Published private(set) var currentTime: Double = 0
+    @Published private(set) var duration: Double = 1
+    @Published private(set) var isReadyToPlay = false
+    @Published private(set) var isSeeking: Bool = false
 
     // MARK: - Private Properties
 
@@ -62,7 +51,72 @@ class PlayerContainerViewModel: ObservableObject {
 
     init(url: URL) {
         playerService = PlayerService(url: url)
+        bindPlayerService()
+        bind()
+    }
+}
 
+// MARK: - Bind
+
+private extension PlayerContainerViewModel {
+    func bind() {
+        playTapped.sink { [weak self] in
+            guard let self = self else { return }
+            self.playerService.playTapped.send()
+        }.store(in: &cancellables)
+
+        pauseTapped.sink { [weak self] in
+            guard let self = self else { return }
+            self.playerService.pauseTapped.send()
+        }.store(in: &cancellables)
+
+        playPauseTapped.sink { [weak self] in
+            guard let self = self else { return }
+            self.playerService.playPauseTapped.send()
+        }.store(in: &cancellables)
+
+        fastForwardTapped.sink { [weak self] in
+            guard let self = self else { return }
+            self.playerService.fastForwardTapped.send()
+        }.store(in: &cancellables)
+
+        rewindTapped.sink { [weak self] in
+            guard let self = self else { return }
+            self.playerService.rewindTapped.send()
+        }.store(in: &cancellables)
+
+        seekToTime.sink { [weak self] time in
+            guard let self = self else { return }
+            self.playerService.seekToTime.send(time)
+        }.store(in: &cancellables)
+
+        requestRotate.sink { [weak self] orientation in
+            guard let self = self else { return }
+            self.orientationToRotate.send(orientation)
+        }.store(in: &cancellables)
+
+        setSeekingStatus.sink { [weak self] seekingStatus in
+            guard let self = self else { return }
+            self.isSeeking = seekingStatus
+        }.store(in: &cancellables)
+
+        // 處理全螢幕切換的輸入
+        toggleFullScreenTapped
+            .sink { [weak self] in
+                guard let self = self else { return }
+                let newOrientation: UIInterfaceOrientationMask = self.isFullScreen
+                    ? .portrait
+                    : .landscapeRight
+
+                // 發出旋轉請求
+                self.requestRotate.send(newOrientation)
+                // 更新狀態
+                self.isFullScreen.toggle()
+            }
+            .store(in: &cancellables)
+    }
+
+    func bindPlayerService() {
         playerService.$isPlaying
             .receive(on: RunLoop.main)
             .assign(to: &$isPlaying)
@@ -78,44 +132,19 @@ class PlayerContainerViewModel: ObservableObject {
         playerService.$bufferProgress
             .receive(on: RunLoop.main)
             .assign(to: &$bufferProgress)
-        
+
         playerService.$isReadyToPlay
             .receive(on: RunLoop.main)
             .assign(to: &$isReadyToPlay)
+
+        playerService.$isLoading
+            .receive(on: RunLoop.main)
+            .assign(to: &$isLoading)
     }
 }
 
-// MARK: - Bind
+// MARK: - Mock Data
 
-private extension PlayerContainerViewModel {
-    func bind() {
-        playTapped.sink { [weak self] in
-            guard let self = self else { return }
-            self.playerService.playTapped.send()
-        }.store(in: &cancellables)
-        
-        pauseTapped.sink { [weak self] in
-            guard let self = self else { return }
-            self.playerService.pauseTapped.send()
-        }.store(in: &cancellables)
-        
-        playPauseTapped.sink { [weak self] in
-            guard let self = self else { return }
-            self.playerService.playTapped.send()
-        }.store(in: &cancellables)
-        
-        fastForwardTapped.sink { [weak self] in
-            guard let self = self else { return }
-            self.playerService.fastForwardTapped.send()
-        }.store(in: &cancellables)
-        
-        rewindTapped.sink { [weak self] in
-            guard let self = self else { return }
-            self.playerService.rewindTapped.send()
-        }.store(in: &cancellables)
-    }
+extension PlayerContainerViewModel {
+    static let mock = PlayerContainerViewModel(url: URL(string: "https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/720/Big_Buck_Bunny_720_10s_2MB.mp4")!)
 }
-
-// MARK: - Private Methods
-
-private extension PlayerContainerViewModel {}

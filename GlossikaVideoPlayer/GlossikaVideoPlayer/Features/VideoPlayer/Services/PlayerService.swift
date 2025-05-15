@@ -5,9 +5,9 @@
 //  Created by Yu Li Lin on 2025/5/14.
 //
 
-import Foundation
-import Combine
 import AVKit
+import Combine
+import Foundation
 
 // MARK: - PlayerService
 
@@ -18,9 +18,8 @@ final class PlayerService: ObservableObject {
 
     // MARK: - Input
 
-    let playTapped  = PassthroughSubject<Void, Never>()
+    let playTapped = PassthroughSubject<Void, Never>()
     let pauseTapped = PassthroughSubject<Void, Never>()
-            
     let playPauseTapped = PassthroughSubject<Void, Never>()
     let rewindTapped = PassthroughSubject<Void, Never>()
     let fastForwardTapped = PassthroughSubject<Void, Never>()
@@ -33,6 +32,7 @@ final class PlayerService: ObservableObject {
 
     // MARK: - Output
 
+    @Published var isLoading = true
     @Published var isPlaying = false
     @Published var currentTime: Double = 0
     @Published var duration: Double = 1
@@ -41,9 +41,14 @@ final class PlayerService: ObservableObject {
 
     init(url: URL) {
         player = AVPlayer(url: url)
+
+        player.automaticallyWaitsToMinimizeStalling = false
+        player.currentItem?.preferredForwardBufferDuration = 0
+
         bind()
         observeTime()
         observeStatus()
+        observeTimeControlStatus()
     }
 
     deinit {
@@ -56,19 +61,19 @@ final class PlayerService: ObservableObject {
 // MARK: - Bind
 
 private extension PlayerService {
-    func bind() {        
+    func bind() {
         playTapped.sink { [weak self] in
             guard let self = self else { return }
             self.player.play()
             self.isPlaying = true
         }.store(in: &cancellables)
-        
+
         pauseTapped.sink { [weak self] in
             guard let self = self else { return }
             self.player.pause()
             self.isPlaying = false
         }.store(in: &cancellables)
-        
+
         playPauseTapped
             .sink { [weak self] in
                 guard let self = self else { return }
@@ -84,7 +89,20 @@ private extension PlayerService {
             .sink { [weak self] in
                 guard let self = self else { return }
                 let targetTime = max(self.currentTime - 10, 0)
-                self.player.seek(to: CMTime(seconds: targetTime, preferredTimescale: 600))
+
+                let cmTime = CMTime(seconds: targetTime, preferredTimescale: 600)
+
+                // 精確跳轉
+                self.player.currentItem?.seek(
+                    to: cmTime,
+                    toleranceBefore: .zero,
+                    toleranceAfter: .zero
+                )
+                // 立刻播放
+                if self.isPlaying {
+                    self.player.setRate(1.0, time: cmTime, atHostTime: CMTime.invalid)
+                }
+
             }.store(in: &cancellables)
 
         fastForwardTapped
@@ -99,7 +117,10 @@ private extension PlayerService {
             .sink { [weak self] time in
                 guard let self = self else { return }
                 // 時間基準（1 秒 = 600 單位）
-                self.player.seek(to: CMTime(seconds: time, preferredTimescale: 600))
+                self.isLoading = true
+                self.player.seek(to: CMTime(seconds: time, preferredTimescale: 600)) { _ in
+                    self.isLoading = false
+                }
             }.store(in: &cancellables)
     }
 }
@@ -111,11 +132,12 @@ private extension PlayerService {
         player.currentItem?.publisher(for: \.status)
             .sink { [weak self] status in
                 guard let self = self else { return }
-                
+
                 switch status {
                 case .readyToPlay:
                     self.observeBuffer()
                     self.isReadyToPlay = true
+                    self.isLoading = false
                 case .failed:
                     self.player.pause()
                     self.isReadyToPlay = false
@@ -147,8 +169,7 @@ private extension PlayerService {
             .sink { [weak self] ranges in
                 guard let self = self,
                       let timeRange = ranges.first?.timeRangeValue else { return }
-                
-                
+
                 let duration = self.duration
                 guard duration > 0 else {
                     self.bufferProgress = 0
@@ -157,8 +178,28 @@ private extension PlayerService {
 
                 let buffered = CMTimeGetSeconds(timeRange.start) + CMTimeGetSeconds(timeRange.duration)
                 self.bufferProgress = min(buffered / duration, 1.0)
-                                                
-                print("bufferProgress", self.bufferProgress)
+            }
+            .store(in: &cancellables)
+    }
+
+    func observeTimeControlStatus() {
+        player.publisher(for: \.timeControlStatus)
+            .receive(on: RunLoop.main)
+            .sink { [weak self] status in
+                guard let self = self else { return }
+                switch status {
+                case .waitingToPlayAtSpecifiedRate:
+                    // AVPlayer 正在緩衝/等待播放
+                    self.isLoading = true
+                case .playing:
+                    // 已經在播放
+                    self.isLoading = false
+                case .paused:
+                    // 暫停時當作家載完成
+                    self.isLoading = false
+                @unknown default:
+                    break
+                }
             }
             .store(in: &cancellables)
     }

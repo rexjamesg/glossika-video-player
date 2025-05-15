@@ -11,6 +11,7 @@ import SwiftUI
 
 struct VideoListView: View {
     @ObservedObject var viewModel = VideoListViewModel()
+    @Environment(\.horizontalSizeClass) var horizontalSizeClass
 
     // MARK: - Private Properties
 
@@ -36,6 +37,12 @@ struct VideoListView: View {
             }
             .listStyle(.plain)
             .scrollContentBackground(.hidden)
+        }
+        .onAppear {
+            AppDelegate.shared.orientationLock = .portrait
+        }
+        .onDisappear {            
+            AppDelegate.shared.orientationLock = .all
         }
         .fullScreenCover(item: $selectedItem) { video in
             if let url = video.source.url {

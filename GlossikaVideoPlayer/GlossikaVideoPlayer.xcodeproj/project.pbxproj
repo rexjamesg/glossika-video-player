@@ -26,7 +26,7 @@
 		51370F7D2DD4210400823183 /* AnyAnyTransitionExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51370F7C2DD4210400823183 /* AnyAnyTransitionExtensions.swift */; };
 		51370F812DD4262F00823183 /* VideoPlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51370F802DD4262F00823183 /* VideoPlayerView.swift */; };
 		51370F852DD43B4800823183 /* PlayerService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51370F842DD43B4800823183 /* PlayerService.swift */; };
-		51370F882DD47A8700823183 /* PlayerBufferView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51370F872DD47A8700823183 /* PlayerBufferView.swift */; };
+		51370F882DD47A8700823183 /* PlaybackOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51370F872DD47A8700823183 /* PlaybackOverlayView.swift */; };
 		513E78872DD47FE40044528D /* PlayerControlsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 513E78862DD47FE40044528D /* PlayerControlsView.swift */; };
 		5145C8332DD483E400CE750E /* PlayerControlsViewBase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5145C8322DD483E400CE750E /* PlayerControlsViewBase.swift */; };
 /* End PBXBuildFile section */
@@ -52,7 +52,7 @@
 		51370F7C2DD4210400823183 /* AnyAnyTransitionExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnyAnyTransitionExtensions.swift; sourceTree = "<group>"; };
 		51370F802DD4262F00823183 /* VideoPlayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoPlayerView.swift; sourceTree = "<group>"; };
 		51370F842DD43B4800823183 /* PlayerService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerService.swift; sourceTree = "<group>"; };
-		51370F872DD47A8700823183 /* PlayerBufferView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerBufferView.swift; sourceTree = "<group>"; };
+		51370F872DD47A8700823183 /* PlaybackOverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaybackOverlayView.swift; sourceTree = "<group>"; };
 		513E78862DD47FE40044528D /* PlayerControlsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerControlsView.swift; sourceTree = "<group>"; };
 		5145C8322DD483E400CE750E /* PlayerControlsViewBase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerControlsViewBase.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -171,8 +171,8 @@
 			isa = PBXGroup;
 			children = (
 				51370F832DD43B3D00823183 /* Services */,
-				51370F822DD43B3100823183 /* ViewModels */,
 				51339E542DD3846500238B19 /* Views */,
+				51370F822DD43B3100823183 /* ViewModels */,
 			);
 			path = VideoPlayer;
 			sourceTree = "<group>";
@@ -182,7 +182,7 @@
 			children = (
 				51339E522DD34A6000238B19 /* AVPlayerUIView.swift */,
 				51370F802DD4262F00823183 /* VideoPlayerView.swift */,
-				51370F872DD47A8700823183 /* PlayerBufferView.swift */,
+				51370F872DD47A8700823183 /* PlaybackOverlayView.swift */,
 				513E78862DD47FE40044528D /* PlayerControlsView.swift */,
 				5145C8322DD483E400CE750E /* PlayerControlsViewBase.swift */,
 			);
@@ -192,7 +192,6 @@
 		51339E542DD3846500238B19 /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				51370F862DD47A7600823183 /* New Group */,
 				51339E4F2DD3493600238B19 /* PlayerContainerView.swift */,
 				51339E512DD34A5100238B19 /* Components */,
 			);
@@ -249,13 +248,6 @@
 				51370F842DD43B4800823183 /* PlayerService.swift */,
 			);
 			path = Services;
-			sourceTree = "<group>";
-		};
-		51370F862DD47A7600823183 /* New Group */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = "New Group";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -346,7 +338,7 @@
 				51370F7B2DD41B0A00823183 /* ViewExtensions.swift in Sources */,
 				51370F762DD41A7C00823183 /* BottomToastView.swift in Sources */,
 				51339E4E2DD3492A00238B19 /* PlayerContainerViewModel.swift in Sources */,
-				51370F882DD47A8700823183 /* PlayerBufferView.swift in Sources */,
+				51370F882DD47A8700823183 /* PlaybackOverlayView.swift in Sources */,
 				51339E452DD3429100238B19 /* VideoListCell.swift in Sources */,
 				51370F852DD43B4800823183 /* PlayerService.swift in Sources */,
 				51370F782DD41AC900823183 /* BottomToastViewModifier.swift in Sources */,
@@ -487,7 +479,7 @@
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -516,7 +508,7 @@
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",

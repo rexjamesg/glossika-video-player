@@ -34,6 +34,9 @@ struct PlayerControlsView: View {
                 
                 Spacer()
             }
+            .foregroundColor(.white)
+            .frame(maxWidth: .infinity)
+
             Spacer()
         }
     }
@@ -44,10 +47,11 @@ private extension PlayerControlsView {
     func setActionButton(imageName: String, action: @escaping ()->Void) -> some View {
         Button {
             action()
+            viewModel.resetAutoHide.send()
         } label: {
             Image(systemName: imageName)
                 .font(.title)
-        }.tint(.white)
+        }
     }
 }
 

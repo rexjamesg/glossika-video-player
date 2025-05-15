@@ -1,5 +1,5 @@
 //
-//  PlayerBufferView.swift
+//  PlaybackOverlayView.swift
 //  GlossikaVideoPlayer
 //
 //  Created by Yu Li Lin on 2025/5/14.
@@ -7,11 +7,11 @@
 
 import SwiftUI
 
-// MARK: - PlayerBufferView
+// MARK: - PlaybackOverlayView
 
-struct PlayerBufferView: View {
+struct PlaybackOverlayView: View {
     @ObservedObject var viewModel: PlayerContainerViewModel
-    
+
     var body: some View {
         GeometryReader { geometry in
             VStack {
@@ -20,35 +20,29 @@ struct PlayerBufferView: View {
             }.frame(maxHeight: .infinity, alignment: .bottom)
         }
     }
-
-    // 方便顯示時間 01:23 / 04:05
-    private func timeString(_ seconds: Double) -> String {
-        guard seconds.isFinite else {
-                return "00:00"  // 返回預設值
-            }
-        let time = Int(seconds)
-        return String(format: "%02d:%02d", time / 60, time % 60)
-    }
 }
 
-//MARK: - Private Methods
-private extension PlayerBufferView {
+// MARK: - Private Methods
+
+private extension PlaybackOverlayView {
     func setTimeAndFullScreenButton() -> some View {
-        HStack() {
+        HStack {
             Text("\(timeString(viewModel.currentTime)) / \(timeString(viewModel.duration))")
                 .font(.caption)
                 .foregroundColor(.white)
             Spacer()
             Button {
-                // 全螢幕切換動作
+                viewModel.toggleFullScreenTapped.send()                
             } label: {
-                Image(systemName: "arrow.up.left.and.arrow.down.right") // 建議 icon
+                Image(systemName: viewModel.isFullScreen
+                    ? "arrow.down.right.and.arrow.up.left" // 退出全螢幕 icon
+                    : "arrow.up.left.and.arrow.down.right") // 進入全螢幕 icon
                     .font(.title3)
             }
             .foregroundColor(.white)
         }.padding(.horizontal)
     }
-    
+
     func setBufferAndSliderView(geometry: GeometryProxy) -> some View {
         ZStack(alignment: .leading) {
             // 進度條基底
@@ -66,15 +60,24 @@ private extension PlayerBufferView {
             }
         }
     }
+
+    // 方便顯示時間 01:23 / 04:05
+    func timeString(_ seconds: Double) -> String {
+        guard seconds.isFinite else {
+            return "00:00" // 返回預設值
+        }
+        let time = Int(seconds)
+        return String(format: "%02d:%02d", time / 60, time % 60)
+    }
 }
 
-struct PlayerBufferView_Previews: PreviewProvider {
+// MARK: - PlaybackOverlayView_Previews
+
+struct PlaybackOverlayView_Previews: PreviewProvider {
     static var previews: some View {
-                
-        PlayerBufferView(viewModel: PlayerContainerViewModel.mock)
+        PlaybackOverlayView(viewModel: PlayerContainerViewModel.mock)
             .previewLayout(.sizeThatFits)
             .aspectRatio(16 / 9, contentMode: .fit)
             .background(.gray)
     }
 }
-
