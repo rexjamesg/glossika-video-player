@@ -153,8 +153,8 @@
 		51339E422DD3427C00238B19 /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				51339E432DD3428400238B19 /* Components */,
 				51339E2A2DD3399B00238B19 /* VideoListView.swift */,
+				51339E432DD3428400238B19 /* Components */,
 			);
 			path = Views;
 			sourceTree = "<group>";

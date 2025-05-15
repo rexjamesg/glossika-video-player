@@ -15,21 +15,22 @@ import UIKit
 class PlayerContainerViewModel: ObservableObject {
     // MARK: - Public Properties
 
-    var player: AVPlayer { playerService.player }
+    var player: AVPlayer? { playerService?.player }
 
     // MARK: - Input
+
+    let loadURL = PassthroughSubject<URL, Never>()
     let resetAutoHide = PassthroughSubject<Void, Never>()
     let toggleFullScreenTapped = PassthroughSubject<Void, Never>()
     let requestRotate = PassthroughSubject<UIInterfaceOrientationMask, Never>()
     let setSeekingStatus = PassthroughSubject<Bool, Never>()
-    
+
     let playTapped = PassthroughSubject<Void, Never>()
     let pauseTapped = PassthroughSubject<Void, Never>()
     let fastForwardTapped = PassthroughSubject<Void, Never>()
     let rewindTapped = PassthroughSubject<Void, Never>()
     let playPauseTapped = PassthroughSubject<Void, Never>()
     let seekToTime = PassthroughSubject<Double, Never>()
-    
 
     // MARK: - Output
 
@@ -46,13 +47,16 @@ class PlayerContainerViewModel: ObservableObject {
 
     // MARK: - Private Properties
 
-    private let playerService: PlayerService
+    private var playerService: PlayerService?
     private var cancellables = Set<AnyCancellable>()
 
-    init(url: URL) {
+    init() {
+        bind()
+    }
+
+    func load(url: URL) {
         playerService = PlayerService(url: url)
         bindPlayerService()
-        bind()
     }
 }
 
@@ -60,34 +64,40 @@ class PlayerContainerViewModel: ObservableObject {
 
 private extension PlayerContainerViewModel {
     func bind() {
+        loadURL
+            .sink { [weak self] url in
+                self?.load(url: url)                
+            }
+            .store(in: &cancellables)
+
         playTapped.sink { [weak self] in
             guard let self = self else { return }
-            self.playerService.playTapped.send()
+            self.playerService?.playTapped.send()
         }.store(in: &cancellables)
 
         pauseTapped.sink { [weak self] in
             guard let self = self else { return }
-            self.playerService.pauseTapped.send()
+            self.playerService?.pauseTapped.send()
         }.store(in: &cancellables)
 
         playPauseTapped.sink { [weak self] in
             guard let self = self else { return }
-            self.playerService.playPauseTapped.send()
+            self.playerService?.playPauseTapped.send()
         }.store(in: &cancellables)
 
         fastForwardTapped.sink { [weak self] in
             guard let self = self else { return }
-            self.playerService.fastForwardTapped.send()
+            self.playerService?.fastForwardTapped.send()
         }.store(in: &cancellables)
 
         rewindTapped.sink { [weak self] in
             guard let self = self else { return }
-            self.playerService.rewindTapped.send()
+            self.playerService?.rewindTapped.send()
         }.store(in: &cancellables)
 
         seekToTime.sink { [weak self] time in
             guard let self = self else { return }
-            self.playerService.seekToTime.send(time)
+            self.playerService?.seekToTime.send(time)
         }.store(in: &cancellables)
 
         requestRotate.sink { [weak self] orientation in
@@ -117,27 +127,27 @@ private extension PlayerContainerViewModel {
     }
 
     func bindPlayerService() {
-        playerService.$isPlaying
+        playerService?.$isPlaying
             .receive(on: RunLoop.main)
             .assign(to: &$isPlaying)
 
-        playerService.$currentTime
+        playerService?.$currentTime
             .receive(on: RunLoop.main)
             .assign(to: &$currentTime)
 
-        playerService.$duration
+        playerService?.$duration
             .receive(on: RunLoop.main)
             .assign(to: &$duration)
 
-        playerService.$bufferProgress
+        playerService?.$bufferProgress
             .receive(on: RunLoop.main)
             .assign(to: &$bufferProgress)
 
-        playerService.$isReadyToPlay
+        playerService?.$isReadyToPlay
             .receive(on: RunLoop.main)
             .assign(to: &$isReadyToPlay)
 
-        playerService.$isLoading
+        playerService?.$isLoading
             .receive(on: RunLoop.main)
             .assign(to: &$isLoading)
     }
@@ -146,5 +156,7 @@ private extension PlayerContainerViewModel {
 // MARK: - Mock Data
 
 extension PlayerContainerViewModel {
-    static let mock = PlayerContainerViewModel(url: URL(string: "https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/720/Big_Buck_Bunny_720_10s_2MB.mp4")!)
+    // static let mock = PlayerContainerViewModel(url: URL(string: "https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/720/Big_Buck_Bunny_720_10s_2MB.mp4")!)
+
+    static let mock = PlayerContainerViewModel()
 }

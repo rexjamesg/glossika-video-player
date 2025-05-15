@@ -39,17 +39,27 @@ struct VideoListView: View {
             .scrollContentBackground(.hidden)
         }
         .onAppear {
-            AppDelegate.shared.orientationLock = .portrait
+            AppDelegate.shared.orientationLock = .portrait            
         }
-        .onDisappear {            
+        .onDisappear {
             AppDelegate.shared.orientationLock = .all
         }
         .fullScreenCover(item: $selectedItem) { video in
             if let url = video.source.url {
-                PlayerContainerView(url: url)
+                makePlayerContainer(for: url)
             }
         }
         .bottomToast(isPresented: $showToast, message: "無效的影片網址", type: .error)
+    }
+}
+
+// MARK: - Private Methods
+
+private extension VideoListView {
+    func makePlayerContainer(for url: URL) -> PlayerContainerView {
+        let vm = PlayerContainerViewModel()
+        vm.load(url: url)
+        return PlayerContainerView(viewModel: vm)
     }
 }
 

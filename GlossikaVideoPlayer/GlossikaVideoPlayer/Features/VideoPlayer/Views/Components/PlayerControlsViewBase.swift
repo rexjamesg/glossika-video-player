@@ -50,7 +50,6 @@ private extension PlayerControlsViewBase {
 struct PlayerControlsViewBase_Previews: PreviewProvider {
     static var previews: some View {
         PlayerControlsViewBase(viewModel: PlayerContainerViewModel.mock)
-            .previewLayout(.sizeThatFits)
-            .aspectRatio(16 / 9, contentMode: .fit)
+            .previewLayout(.sizeThatFits)            
     }
 }

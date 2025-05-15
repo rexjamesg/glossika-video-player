@@ -5,6 +5,7 @@
 //  Created by Yu Li Lin on 2025/5/13.
 //
 
+import AVFoundation
 import Combine
 import SwiftUI
 
@@ -17,8 +18,8 @@ struct PlayerContainerView: View {
     @State var autoHideControlsTask: DispatchWorkItem?
     @State private var orientation = UIDeviceOrientation.unknown
 
-    init(url: URL) {
-        _viewModel = StateObject(wrappedValue: PlayerContainerViewModel(url: url))
+    init(viewModel: PlayerContainerViewModel) {
+        _viewModel = StateObject(wrappedValue: viewModel)
     }
 
     var body: some View {
@@ -28,7 +29,9 @@ struct PlayerContainerView: View {
                 VStack {
                     Spacer()
                     ZStack {
-                        setVideoPlayerView(geometry: geometry)
+                        if let player = viewModel.player {
+                            setVideoPlayerView(player: player, geometry: geometry)
+                        }
 
                         if showControls {
                             setPlayerControlsViewBase(geometry: geometry)
@@ -38,28 +41,31 @@ struct PlayerContainerView: View {
                     Spacer()
                 }
 
-                if showControls && !viewModel.isFullScreen {
+                if showControls {
                     setCloseButton()
                         .transition(.opacity)
                 }
             }
             .background(Color.black.ignoresSafeArea())
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
             .onTapGesture {
                 toggleControls()
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
-            .onAppear {
-                AppDelegate.shared.orientationLock = .all
+        }
+        .onAppear {
+            AppDelegate.shared.orientationLock = .all
+        }
+        .onDisappear {
+            AppDelegate.shared.orientationLock = .portrait
+            DispatchQueue.main.async {
+                AppDelegate.shared.rotateScreen(to: .portrait)
             }
-            .onDisappear {
-                AppDelegate.shared.orientationLock = .portrait
-            }
-            .onReceive(viewModel.orientationToRotate.compactMap { $0 }) { orientation in
-                AppDelegate.shared.rotateScreen(to: orientation)
-            }
-            .onReceive(viewModel.resetAutoHide) { _ in
-                scheduleAutoHideControls()
-            }
+        }
+        .onReceive(viewModel.orientationToRotate.compactMap { $0 }) { orientation in
+            AppDelegate.shared.rotateScreen(to: orientation)
+        }
+        .onReceive(viewModel.resetAutoHide) { _ in
+            scheduleAutoHideControls()
         }
         .onChange(of: viewModel.isSeeking, perform: { isSeeking in
             if isSeeking {
@@ -80,14 +86,15 @@ struct PlayerContainerView: View {
 // MARK: - Private Methods
 
 private extension PlayerContainerView {
-    func setVideoPlayerView(geometry: GeometryProxy) -> some View {
-        VideoPlayerView(player: viewModel.player)
+    func setVideoPlayerView(player: AVPlayer, geometry: GeometryProxy) -> some View {
+        VideoPlayerView(player: player)
             .frame(width: geometry.size.width, height: geometry.size.width * 9 / 16)
     }
 
-    func setPlayerControlsViewBase(geometry: GeometryProxy) -> some View {
+    func setPlayerControlsViewBase(geometry _: GeometryProxy) -> some View {
         PlayerControlsViewBase(viewModel: viewModel)
-            .frame(width: geometry.size.width, height: geometry.size.width * 9 / 16)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        // .frame(width: geometry.size.width, height: geometry.size.width * 9 / 16)
     }
 
     func setCloseButton() -> some View {
@@ -132,8 +139,7 @@ private extension PlayerContainerView {
 
 struct PlayerContainerView_Previews: PreviewProvider {
     static var previews: some View {
-        let url = URL(string: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4")!
-        PlayerContainerView(url: url)
+        PlayerContainerView(viewModel: PlayerContainerViewModel.mock)
     }
 }
 

@@ -93,16 +93,13 @@ private extension PlayerService {
                 let cmTime = CMTime(seconds: targetTime, preferredTimescale: 600)
 
                 // 精確跳轉
-                self.player.currentItem?.seek(
-                    to: cmTime,
-                    toleranceBefore: .zero,
-                    toleranceAfter: .zero
-                )
-                // 立刻播放
-                if self.isPlaying {
-                    self.player.setRate(1.0, time: cmTime, atHostTime: CMTime.invalid)
+                self.player.currentItem?.seek(to: cmTime, toleranceBefore: .zero, toleranceAfter: .zero
+                ) { finished in
+                    // 立刻播放
+                    if self.isPlaying {
+                        self.player.setRate(1.0, time: cmTime, atHostTime: CMTime.invalid)
+                    }
                 }
-
             }.store(in: &cancellables)
 
         fastForwardTapped

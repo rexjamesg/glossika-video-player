@@ -14,11 +14,20 @@ struct PlaybackOverlayView: View {
 
     var body: some View {
         GeometryReader { geometry in
+            // 先算出當前是不是橫屏
+            let isLandscape = geometry.size.width > geometry.size.height
+            // 動態底部間距：安全區 + 16 (直式) 或安全區 + 32 (橫式)
+            let bottomPadding = geometry.safeAreaInsets.bottom + (isLandscape ? 32 : 16)
             VStack {
                 setTimeAndFullScreenButton()
                 setBufferAndSliderView(geometry: geometry)
-            }.frame(maxHeight: .infinity, alignment: .bottom)
+            }
+            .frame(maxHeight: .infinity, alignment: .bottom)
+            .padding(.leading, geometry.safeAreaInsets.leading + 24)
+            .padding(.trailing, geometry.safeAreaInsets.trailing + 24)
+            .padding(.bottom, bottomPadding)
         }
+        .ignoresSafeArea() // 讓 safeAreaInsets 可以正確取值
     }
 }
 
@@ -32,7 +41,7 @@ private extension PlaybackOverlayView {
                 .foregroundColor(.white)
             Spacer()
             Button {
-                viewModel.toggleFullScreenTapped.send()                
+                viewModel.toggleFullScreenTapped.send()
             } label: {
                 Image(systemName: viewModel.isFullScreen
                     ? "arrow.down.right.and.arrow.up.left" // 退出全螢幕 icon
