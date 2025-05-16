@@ -14,31 +14,38 @@ struct VideoListCell: View {
     let item: VideoItem
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8, content: {
-            if let url = item.source.fullImageURL {
-                KFImage(url)
-                    .placeholder {
-                        ZStack {
-                            Rectangle()
-                                .fill(Color.gray.opacity(0.1))
-                                .aspectRatio(16 / 9, contentMode: .fit)
-                            ProgressView()
-                        }
+        VStack(alignment: .leading, spacing: 20) {
+            // 1. 頂部圖片
+            KFImage(item.source.fullImageURL)
+                .placeholder {
+                    ZStack {
+                        Rectangle()
+                            .fill(Color.gray.opacity(0.1))
+                        ProgressView()
                     }
-                    .resizable()
-                    .aspectRatio(16 / 9, contentMode: .fit)
-                    .cornerRadius(10)
-            }
+                }
+                .resizable()
+                .scaledToFill()
+                .frame(height: 180) // 固定高度
+                .clipped() // 剪裁超出部分
+                .cornerRadius(8) // 圓角
 
+            // 2. 標題
             Text(item.source.title)
-                .font(.title3)
-                .fontWeight(.bold)
+                .font(.headline)
+                .lineLimit(2)
 
+            // 3. 說明文字
             Text(item.source.description)
-                .font(.body)
+                .font(.subheadline)
                 .foregroundColor(.secondary)
-        })
-        .padding(.vertical, 8)
+
+            Spacer(minLength: 0)
+        }
+        .padding(12)
+        .background(Color(UIColor.systemBackground))
+        .cornerRadius(12)
+        .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
     }
 }
 
@@ -48,6 +55,5 @@ struct VideoListCell_Previews: PreviewProvider {
     static var previews: some View {
         VideoListCell(item: VideoItem.mock)
             .previewLayout(/*@START_MENU_TOKEN@*/ .sizeThatFits/*@END_MENU_TOKEN@*/)
-            .background(.gray.opacity(0.1))
     }
 }

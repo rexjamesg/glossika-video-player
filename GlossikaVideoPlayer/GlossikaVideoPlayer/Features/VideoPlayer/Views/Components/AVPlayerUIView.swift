@@ -14,6 +14,7 @@ import AVKit
 struct AVPlayerUIView: UIViewControllerRepresentable {
     let player: AVPlayer
 
+    // 將 AVPlayerViewController 嵌入 SwiftUI，隱藏預設控制列
     func makeUIViewController(context _: Context) -> AVPlayerViewController {
         let controller = AVPlayerViewController()
         controller.player = player

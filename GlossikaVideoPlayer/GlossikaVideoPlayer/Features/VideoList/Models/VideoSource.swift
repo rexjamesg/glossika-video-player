@@ -29,7 +29,7 @@ enum VideoSource: Int, CaseIterable {
     case volkswagenGTIReview
     case weAreGoingOnBullrun
     case whatCareCanYouGetForAGrand
-    case testError
+    //case testError
 }
 
 // MARK: VideoDetail
@@ -63,8 +63,8 @@ extension VideoSource: VideoDetail {
 
         case .whatCareCanYouGetForAGrand:
             return "The Smoking Tire meets up with Chris and Jorge from CarsForAGrand.com to see just how far $1,000 can go when looking for a car.The Smoking Tire meets up with Chris and Jorge from CarsForAGrand.com to see just how far $1,000 can go when looking for a car."
-        case .testError:
-            return "TestError Description"
+//        case .testError:
+//            return "TestError Description"
         }
     }
 
@@ -96,8 +96,8 @@ extension VideoSource: VideoDetail {
 
         case .whatCareCanYouGetForAGrand:
             return URL(string: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WhatCarCanYouGetForAGrand.mp4")
-        case .testError:
-            return URL(string: "")
+//        case .testError:
+//            return URL(string: "")
         }
     }
 
@@ -130,12 +130,12 @@ extension VideoSource: VideoDetail {
         case .whatCareCanYouGetForAGrand:
             return "By Garage419"
             
-        case .testError:
-            return "By testError"
+//        case .testError:
+//            return "By testError"
         }
     }
 
-    var thumb: String {
+    var thumbnail: String {
         switch self {
         case .bigBuckBunny:
             return "images/BigBuckBunny.jpg"
@@ -164,8 +164,8 @@ extension VideoSource: VideoDetail {
         case .whatCareCanYouGetForAGrand:
             return "images/WhatCarCanYouGetForAGrand.jpg"
             
-        case .testError:
-            return "testErrorThumb.jpg"
+//        case .testError:
+//            return "testErrorThumb.jpg"
         }
     }
 
@@ -198,8 +198,8 @@ extension VideoSource: VideoDetail {
         case .whatCareCanYouGetForAGrand:
             return "What care can you get for a grand?"
             
-        case .testError:
-            return "TestError Title"
+//        case .testError:
+//            return "TestError Title"
         }
     }
 
@@ -207,7 +207,8 @@ extension VideoSource: VideoDetail {
         var components = URLComponents()
         components.scheme = "http"
         components.host = "commondatastorage.googleapis.com"
-        components.path = "/gtv-videos-bucket/sample/" + thumb
+        components.path = "/gtv-videos-bucket/sample/" + thumbnail
         return components.url
     }
 }
+

@@ -40,7 +40,6 @@ private extension PlayerControlsViewBase {
             .scaleEffect(2)
             .progressViewStyle(CircularProgressViewStyle(tint: .white))
             .frame(width: 40, height: 40)
-            .background(Color.black.opacity(0.3))
             .transition(.opacity)
     }
 }
@@ -50,6 +49,6 @@ private extension PlayerControlsViewBase {
 struct PlayerControlsViewBase_Previews: PreviewProvider {
     static var previews: some View {
         PlayerControlsViewBase(viewModel: PlayerContainerViewModel.mock)
-            .previewLayout(.sizeThatFits)            
+            .previewLayout(.sizeThatFits)
     }
 }

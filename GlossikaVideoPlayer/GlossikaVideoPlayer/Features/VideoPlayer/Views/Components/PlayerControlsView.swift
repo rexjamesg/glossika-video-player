@@ -17,19 +17,19 @@ struct PlayerControlsView: View {
                 Spacer()
                 
                 setActionButton(imageName: "gobackward.10") {
-                    viewModel.rewindTapped.send()
+                    viewModel.playerAction.send(.rewind())
                 }
                                
                 Spacer()
 
                 setActionButton(imageName: viewModel.isPlaying ? "pause.fill" : "play.fill") {
-                    viewModel.playPauseTapped.send()
+                    viewModel.playerAction.send(.togglePlay)
                 }
                 
                 Spacer()
 
                 setActionButton(imageName: "goforward.10") {
-                    viewModel.fastForwardTapped.send()
+                    viewModel.playerAction.send(.fastForward())
                 }
                 
                 Spacer()

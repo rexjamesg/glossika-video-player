@@ -11,6 +11,7 @@ import SwiftUI
 
 // MARK: - PlayerContainerView
 
+/// 負責包裹 AVPlayer、控制列顯示／隱藏邏輯，以及螢幕旋轉鎖定
 struct PlayerContainerView: View {
     @Environment(\.dismiss) private var dismiss
     @StateObject var viewModel: PlayerContainerViewModel
@@ -19,6 +20,7 @@ struct PlayerContainerView: View {
     @State private var orientation = UIDeviceOrientation.unknown
 
     init(viewModel: PlayerContainerViewModel) {
+        // 使用外部注入的 VM 以支援延遲 load(url:)
         _viewModel = StateObject(wrappedValue: viewModel)
     }
 
@@ -34,7 +36,7 @@ struct PlayerContainerView: View {
                         }
 
                         if showControls {
-                            setPlayerControlsViewBase(geometry: geometry)
+                            setPlayerControlsViewBase()
                                 .transition(.opacity)
                         }
                     }
@@ -42,7 +44,7 @@ struct PlayerContainerView: View {
                 }
 
                 if showControls {
-                    setCloseButton()
+                    setPlayerTopView()
                         .transition(.opacity)
                 }
             }
@@ -53,20 +55,29 @@ struct PlayerContainerView: View {
             }
         }
         .onAppear {
+            // 進入播放頁時開放所有方向
             AppDelegate.shared.orientationLock = .all
         }
         .onDisappear {
+            // 離開播放頁時鎖回直向
             AppDelegate.shared.orientationLock = .portrait
             DispatchQueue.main.async {
+                // 強制切回 portrait
                 AppDelegate.shared.rotateScreen(to: .portrait)
             }
         }
-        .onReceive(viewModel.orientationToRotate.compactMap { $0 }) { orientation in
-            AppDelegate.shared.rotateScreen(to: orientation)
+        .onReceive(viewModel.orientationToRotate.compactMap { $0 }) { newOrientation in
+            // 通知 AppDelegate 更新鎖定
+            AppDelegate.shared.orientationLock = newOrientation
+            AppDelegate.shared.rotateScreen(to: newOrientation)
         }
         .onReceive(viewModel.resetAutoHide) { _ in
             scheduleAutoHideControls()
         }
+        .onReceive(viewModel.requestRotate, perform: { newOrientation in
+            AppDelegate.shared.orientationLock = newOrientation
+            AppDelegate.shared.rotateScreen(to: newOrientation)
+        })
         .onChange(of: viewModel.isSeeking, perform: { isSeeking in
             if isSeeking {
                 autoHideControlsTask?.cancel()
@@ -76,10 +87,14 @@ struct PlayerContainerView: View {
         })
         .onChange(of: viewModel.isReadyToPlay, perform: { isReadyToPlay in
             if isReadyToPlay {
-                viewModel.playPauseTapped.send()
+                viewModel.playerAction.send(.play)
                 scheduleAutoHideControls()
             }
         })
+        .onRotate { orientation in
+            // 偵測自動轉向的方向並通知改變轉向設定
+            viewModel.autoChangeOrientation.send(orientation)
+        }
     }
 }
 
@@ -91,18 +106,15 @@ private extension PlayerContainerView {
             .frame(width: geometry.size.width, height: geometry.size.width * 9 / 16)
     }
 
-    func setPlayerControlsViewBase(geometry _: GeometryProxy) -> some View {
+    func setPlayerControlsViewBase() -> some View {
         PlayerControlsViewBase(viewModel: viewModel)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-        // .frame(width: geometry.size.width, height: geometry.size.width * 9 / 16)
     }
 
-    func setCloseButton() -> some View {
-        CloseButton(action: {
-            dismiss()
-        }, color: .white)
+    func setPlayerTopView() -> some View {
+        let title = viewModel.videoItem?.source.title ?? ""
+        return PlayerTopView(title: title, action: { dismiss() }, color: .white)
             .padding(.top, 20)
-            .padding(.leading, 20)
     }
 
     func toggleControls() {
@@ -140,34 +152,5 @@ private extension PlayerContainerView {
 struct PlayerContainerView_Previews: PreviewProvider {
     static var previews: some View {
         PlayerContainerView(viewModel: PlayerContainerViewModel.mock)
-    }
-}
-
-// MARK: - PlayerSlider
-
-struct PlayerSlider: View {
-    @ObservedObject var viewModel: PlayerContainerViewModel
-
-    var body: some View {
-        Slider(value: Binding(
-            get: {
-                viewModel.duration.isFinite && viewModel.duration > 0
-                    ? viewModel.currentTime
-                    : 0
-            },
-            set: { newValue in if viewModel.duration.isFinite, viewModel.duration > 0 {
-                viewModel.seekToTime.send(newValue)
-            }
-            }
-        ), in: 0 ... max(viewModel.duration, 1),
-        onEditingChanged: { editing in
-            viewModel.setSeekingStatus.send(editing)
-            print("editing", editing)
-            if editing {
-                viewModel.pauseTapped.send()
-            } else {
-                viewModel.playTapped.send()
-            }
-        })
     }
 }

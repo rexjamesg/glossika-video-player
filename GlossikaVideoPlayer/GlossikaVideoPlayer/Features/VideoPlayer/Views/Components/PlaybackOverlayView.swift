@@ -14,20 +14,18 @@ struct PlaybackOverlayView: View {
 
     var body: some View {
         GeometryReader { geometry in
-            // 先算出當前是不是橫屏
+            // 先算出當前是不是橫屏，根據畫面長寬比判斷直／橫
             let isLandscape = geometry.size.width > geometry.size.height
-            // 動態底部間距：安全區 + 16 (直式) 或安全區 + 32 (橫式)
-            let bottomPadding = geometry.safeAreaInsets.bottom + (isLandscape ? 32 : 16)
+            // 橫式加大底部 padding，避免貼到安全區
+            let bottomPadding = geometry.safeAreaInsets.bottom + (isLandscape ? 40 : 16)
             VStack {
                 setTimeAndFullScreenButton()
                 setBufferAndSliderView(geometry: geometry)
             }
             .frame(maxHeight: .infinity, alignment: .bottom)
-            .padding(.leading, geometry.safeAreaInsets.leading + 24)
-            .padding(.trailing, geometry.safeAreaInsets.trailing + 24)
             .padding(.bottom, bottomPadding)
         }
-        .ignoresSafeArea() // 讓 safeAreaInsets 可以正確取值
+        .padding(.horizontal, 24)
     }
 }
 
@@ -72,11 +70,11 @@ private extension PlaybackOverlayView {
 
     // 方便顯示時間 01:23 / 04:05
     func timeString(_ seconds: Double) -> String {
-        guard seconds.isFinite else {
-            return "00:00" // 返回預設值
+        guard seconds > 1 else {
+            return "00:00"
         }
-        let time = Int(seconds)
-        return String(format: "%02d:%02d", time / 60, time % 60)
+        let sec = Int(seconds)
+        return String(format: "%02d:%02d", sec / 60, sec % 60)
     }
 }
 
@@ -86,7 +84,6 @@ struct PlaybackOverlayView_Previews: PreviewProvider {
     static var previews: some View {
         PlaybackOverlayView(viewModel: PlayerContainerViewModel.mock)
             .previewLayout(.sizeThatFits)
-            .aspectRatio(16 / 9, contentMode: .fit)
             .background(.gray)
     }
 }

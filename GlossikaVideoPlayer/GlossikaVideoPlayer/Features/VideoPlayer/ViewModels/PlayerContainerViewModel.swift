@@ -19,18 +19,15 @@ class PlayerContainerViewModel: ObservableObject {
 
     // MARK: - Input
 
-    let loadURL = PassthroughSubject<URL, Never>()
+    let loadVideo = PassthroughSubject<VideoItem, Never>()
     let resetAutoHide = PassthroughSubject<Void, Never>()
     let toggleFullScreenTapped = PassthroughSubject<Void, Never>()
     let requestRotate = PassthroughSubject<UIInterfaceOrientationMask, Never>()
     let setSeekingStatus = PassthroughSubject<Bool, Never>()
+    let autoChangeOrientation = PassthroughSubject<UIDeviceOrientation, Never>()
 
-    let playTapped = PassthroughSubject<Void, Never>()
-    let pauseTapped = PassthroughSubject<Void, Never>()
-    let fastForwardTapped = PassthroughSubject<Void, Never>()
-    let rewindTapped = PassthroughSubject<Void, Never>()
-    let playPauseTapped = PassthroughSubject<Void, Never>()
-    let seekToTime = PassthroughSubject<Double, Never>()
+    // Player事件
+    let playerAction = PassthroughSubject<PlayerAction, Never>()
 
     // MARK: - Output
 
@@ -45,6 +42,8 @@ class PlayerContainerViewModel: ObservableObject {
     @Published private(set) var isReadyToPlay = false
     @Published private(set) var isSeeking: Bool = false
 
+    private(set) var videoItem: VideoItem?
+    
     // MARK: - Private Properties
 
     private var playerService: PlayerService?
@@ -57,6 +56,7 @@ class PlayerContainerViewModel: ObservableObject {
     func load(url: URL) {
         playerService = PlayerService(url: url)
         bindPlayerService()
+        bindActionSubject()
     }
 }
 
@@ -64,41 +64,14 @@ class PlayerContainerViewModel: ObservableObject {
 
 private extension PlayerContainerViewModel {
     func bind() {
-        loadURL
-            .sink { [weak self] url in
-                self?.load(url: url)                
+        loadVideo.sink { [weak self] videoItem in
+            guard let self = self else { return }
+            self.videoItem = videoItem
+            if let url = videoItem.source.url {
+                self.load(url: url)
             }
-            .store(in: &cancellables)
-
-        playTapped.sink { [weak self] in
-            guard let self = self else { return }
-            self.playerService?.playTapped.send()
-        }.store(in: &cancellables)
-
-        pauseTapped.sink { [weak self] in
-            guard let self = self else { return }
-            self.playerService?.pauseTapped.send()
-        }.store(in: &cancellables)
-
-        playPauseTapped.sink { [weak self] in
-            guard let self = self else { return }
-            self.playerService?.playPauseTapped.send()
-        }.store(in: &cancellables)
-
-        fastForwardTapped.sink { [weak self] in
-            guard let self = self else { return }
-            self.playerService?.fastForwardTapped.send()
-        }.store(in: &cancellables)
-
-        rewindTapped.sink { [weak self] in
-            guard let self = self else { return }
-            self.playerService?.rewindTapped.send()
-        }.store(in: &cancellables)
-
-        seekToTime.sink { [weak self] time in
-            guard let self = self else { return }
-            self.playerService?.seekToTime.send(time)
-        }.store(in: &cancellables)
+        }
+        .store(in: &cancellables)
 
         requestRotate.sink { [weak self] orientation in
             guard let self = self else { return }
@@ -116,7 +89,7 @@ private extension PlayerContainerViewModel {
                 guard let self = self else { return }
                 let newOrientation: UIInterfaceOrientationMask = self.isFullScreen
                     ? .portrait
-                    : .landscapeRight
+                    : .landscape
 
                 // 發出旋轉請求
                 self.requestRotate.send(newOrientation)
@@ -124,14 +97,41 @@ private extension PlayerContainerViewModel {
                 self.isFullScreen.toggle()
             }
             .store(in: &cancellables)
+
+        // 處理自動轉向
+        autoChangeOrientation
+            .sink { [weak self] orientation in
+                guard let self = self else { return }
+                if orientation == .landscapeRight || orientation == .landscapeLeft {
+                    self.isFullScreen = true
+                    self.requestRotate.send(.landscape)
+                } else {
+                    self.requestRotate.send(.all)
+                    self.isFullScreen = false
+                }
+            }.store(in: &cancellables)
     }
 
+    func bindActionSubject() {
+        playerAction
+            .sink { [weak self] action in
+                guard let self = self else { return }
+                self.playerService?.playerAction.send(action)
+            }
+            .store(in: &cancellables)
+    }
+
+    /// 監聽 PlayerService 狀態，更新 UI 綁定的 published 屬性
     func bindPlayerService() {
         playerService?.$isPlaying
             .receive(on: RunLoop.main)
             .assign(to: &$isPlaying)
 
         playerService?.$currentTime
+            .map { seconds -> Double in
+                // 在真正播放超過 1 秒前，一律回傳 0
+                seconds > 1 ? seconds : 0
+            }
             .receive(on: RunLoop.main)
             .assign(to: &$currentTime)
 
@@ -140,6 +140,10 @@ private extension PlayerContainerViewModel {
             .assign(to: &$duration)
 
         playerService?.$bufferProgress
+            .map { [weak self] progress in
+                // 如果還沒進入播放（currentTime==0），就回傳 0
+                (self?.currentTime ?? 0) == 0 ? 0 : progress
+            }
             .receive(on: RunLoop.main)
             .assign(to: &$bufferProgress)
 
@@ -156,7 +160,5 @@ private extension PlayerContainerViewModel {
 // MARK: - Mock Data
 
 extension PlayerContainerViewModel {
-    // static let mock = PlayerContainerViewModel(url: URL(string: "https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/720/Big_Buck_Bunny_720_10s_2MB.mp4")!)
-
     static let mock = PlayerContainerViewModel()
 }

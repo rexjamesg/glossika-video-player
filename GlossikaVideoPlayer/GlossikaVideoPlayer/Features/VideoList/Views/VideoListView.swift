@@ -11,55 +11,59 @@ import SwiftUI
 
 struct VideoListView: View {
     @ObservedObject var viewModel = VideoListViewModel()
-    @Environment(\.horizontalSizeClass) var horizontalSizeClass
 
     // MARK: - Private Properties
-
     @State private var selectedItem: VideoItem?
     @State private var showToast = false
-
+    @State private var toastMessage = ""
+    
     var body: some View {
         NavigationStack {
             List {
                 ForEach(viewModel.videoItems, id: \.id) { item in
                     Button {
-                        if item.source.url != nil {
-                            selectedItem = item
-                        } else {
-                            withAnimation(.easeInOut(duration: 0.5)) {
-                                showToast = true
-                            }
-                        }
+                        viewModel.selectItem.send(item)
                     } label: {
                         VideoListCell(item: item)
                     }
+                    .padding(.vertical, 8)
+                    .listRowSeparator(.hidden)
                 }
             }
             .listStyle(.plain)
             .scrollContentBackground(.hidden)
+            .background(.white)
         }
         .onAppear {
-            AppDelegate.shared.orientationLock = .portrait            
+            //列表僅允許直式
+            AppDelegate.shared.orientationLock = .portrait
         }
         .onDisappear {
             AppDelegate.shared.orientationLock = .all
         }
-        .fullScreenCover(item: $selectedItem) { video in
-            if let url = video.source.url {
-                makePlayerContainer(for: url)
+        .fullScreenCover(item: $viewModel.selectedItem) { video in
+            //依照選擇的影片彈出播放器界面
+            makePlayerContainerView(item: video)
+        }
+        .onReceive(viewModel.errorMessage) { msg in
+            //錯誤Toast入口
+            withAnimation(.easeInOut(duration: 0.5)) {
+                toastMessage = msg
+                showToast = true
             }
         }
-        .bottomToast(isPresented: $showToast, message: "無效的影片網址", type: .error)
+        .bottomToast(isPresented: $showToast, message: toastMessage, type: .error)
     }
 }
 
 // MARK: - Private Methods
 
 private extension VideoListView {
-    func makePlayerContainer(for url: URL) -> PlayerContainerView {
-        let vm = PlayerContainerViewModel()
-        vm.load(url: url)
-        return PlayerContainerView(viewModel: vm)
+    //工廠方法
+    func makePlayerContainerView(item: VideoItem) -> some View {
+        let viewModel = PlayerContainerViewModel()
+        viewModel.loadVideo.send(item)
+        return PlayerContainerView(viewModel: viewModel)
     }
 }
 

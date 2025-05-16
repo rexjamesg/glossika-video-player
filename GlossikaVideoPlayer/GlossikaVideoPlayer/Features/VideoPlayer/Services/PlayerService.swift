@@ -9,6 +9,30 @@ import AVKit
 import Combine
 import Foundation
 
+// MARK: - PlayerAction
+
+// 列舉所有player相關操作
+enum PlayerAction {
+    case play
+    case pause
+    case fastForward(seconds: Double)
+    case rewind(seconds: Double)
+    case togglePlay
+    case seek(to: Double)
+}
+
+extension PlayerAction {
+    /// 省略秒數，使用預設 10 秒
+    static func rewind() -> PlayerAction {
+        .rewind(seconds: 10)
+    }
+
+    /// 省略秒數，使用預設 10 秒
+    static func fastForward() -> PlayerAction {
+        .fastForward(seconds: 10)
+    }
+}
+
 // MARK: - PlayerService
 
 final class PlayerService: ObservableObject {
@@ -18,12 +42,8 @@ final class PlayerService: ObservableObject {
 
     // MARK: - Input
 
-    let playTapped = PassthroughSubject<Void, Never>()
-    let pauseTapped = PassthroughSubject<Void, Never>()
-    let playPauseTapped = PassthroughSubject<Void, Never>()
-    let rewindTapped = PassthroughSubject<Void, Never>()
-    let fastForwardTapped = PassthroughSubject<Void, Never>()
-    let seekToTime = PassthroughSubject<Double, Never>()
+    // Player事件
+    let playerAction = PassthroughSubject<PlayerAction, Never>()
 
     // MARK: - Private Properties
 
@@ -41,8 +61,9 @@ final class PlayerService: ObservableObject {
 
     init(url: URL) {
         player = AVPlayer(url: url)
-
+        // 取消 AVPlayer 自動停頓以最小化緩衝
         player.automaticallyWaitsToMinimizeStalling = false
+        // 設定零預取，完全由自己控制 buffer 行為
         player.currentItem?.preferredForwardBufferDuration = 0
 
         bind()
@@ -62,63 +83,48 @@ final class PlayerService: ObservableObject {
 
 private extension PlayerService {
     func bind() {
-        playTapped.sink { [weak self] in
+        playerAction.sink { [weak self] action in
             guard let self = self else { return }
-            self.player.play()
-            self.isPlaying = true
-        }.store(in: &cancellables)
+            switch action {
+            case .play:
+                self.player.play()
+                self.isPlaying = true
 
-        pauseTapped.sink { [weak self] in
-            guard let self = self else { return }
-            self.player.pause()
-            self.isPlaying = false
-        }.store(in: &cancellables)
+            case .pause:
+                self.player.pause()
+                self.isPlaying = false
 
-        playPauseTapped
-            .sink { [weak self] in
-                guard let self = self else { return }
+            case .togglePlay:
                 if self.isPlaying {
                     self.player.pause()
                 } else {
                     self.player.play()
                 }
                 self.isPlaying.toggle()
-            }.store(in: &cancellables)
 
-        rewindTapped
-            .sink { [weak self] in
-                guard let self = self else { return }
+            case .rewind:
                 let targetTime = max(self.currentTime - 10, 0)
-
                 let cmTime = CMTime(seconds: targetTime, preferredTimescale: 600)
 
-                // 精確跳轉
-                self.player.currentItem?.seek(to: cmTime, toleranceBefore: .zero, toleranceAfter: .zero
-                ) { finished in
+                // 精確 seek，避免畫面跳動
+                self.player.currentItem?.seek(to: cmTime, toleranceBefore: .zero, toleranceAfter: .zero) { _ in
                     // 立刻播放
                     if self.isPlaying {
                         self.player.setRate(1.0, time: cmTime, atHostTime: CMTime.invalid)
                     }
                 }
-            }.store(in: &cancellables)
 
-        fastForwardTapped
-            .sink { [weak self] in
-                guard let self = self else { return }
+            case .fastForward:
                 let targetTime = min(self.currentTime + 10, self.duration)
                 self.player.seek(to: CMTime(seconds: targetTime, preferredTimescale: 600))
-            }.store(in: &cancellables)
 
-        // 跳轉播放時間
-        seekToTime
-            .sink { [weak self] time in
-                guard let self = self else { return }
-                // 時間基準（1 秒 = 600 單位）
+            case let .seek(time):
                 self.isLoading = true
                 self.player.seek(to: CMTime(seconds: time, preferredTimescale: 600)) { _ in
                     self.isLoading = false
                 }
-            }.store(in: &cancellables)
+            }
+        }.store(in: &cancellables)
     }
 }
 
