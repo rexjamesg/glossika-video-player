@@ -41,9 +41,10 @@ class PlayerContainerViewModel: ObservableObject {
     @Published private(set) var duration: Double = 1
     @Published private(set) var isReadyToPlay = false
     @Published private(set) var isSeeking: Bool = false
+    @Published private(set) var didPlayToEnd = false
 
     private(set) var videoItem: VideoItem?
-    
+
     // MARK: - Private Properties
 
     private var playerService: PlayerService?
@@ -116,6 +117,12 @@ private extension PlayerContainerViewModel {
         playerAction
             .sink { [weak self] action in
                 guard let self = self else { return }
+                // 重設 didPlayToEnd，只要使用者又seek或play，就要回到還沒結束狀態
+                switch action {
+                case .seek, .play, .togglePlay, .rewind, .fastForward:
+                    self.didPlayToEnd = false
+                default: break
+                }
                 self.playerService?.playerAction.send(action)
             }
             .store(in: &cancellables)
@@ -154,6 +161,10 @@ private extension PlayerContainerViewModel {
         playerService?.$isLoading
             .receive(on: RunLoop.main)
             .assign(to: &$isLoading)
+
+        playerService?.$didPlayToEnd
+            .receive(on: RunLoop.main)
+            .assign(to: &$didPlayToEnd)
     }
 }
 

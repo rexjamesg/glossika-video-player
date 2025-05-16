@@ -14,8 +14,7 @@ struct VideoListCell: View {
     let item: VideoItem
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 20) {
-            // 1. 頂部圖片
+        VStack(alignment: .leading, spacing: 20) {            
             KFImage(item.source.fullImageURL)
                 .placeholder {
                     ZStack {
@@ -26,16 +25,14 @@ struct VideoListCell: View {
                 }
                 .resizable()
                 .scaledToFill()
-                .frame(height: 180) // 固定高度
-                .clipped() // 剪裁超出部分
-                .cornerRadius(8) // 圓角
+                .frame(height: 180)
+                .clipped()
+                .cornerRadius(8)
 
-            // 2. 標題
             Text(item.source.title)
                 .font(.headline)
                 .lineLimit(2)
-
-            // 3. 說明文字
+        
             Text(item.source.description)
                 .font(.subheadline)
                 .foregroundColor(.secondary)

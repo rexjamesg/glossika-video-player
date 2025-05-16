@@ -31,7 +31,7 @@ class VideoListViewModel: ObservableObject {
 //MARK: - Bind
 private extension VideoListViewModel {
     func bind() {
-        // 處理則的影片：如果有 URL 回傳提供播放器播放，否則發出錯誤訊息。
+        // 處理影片：如果有 URL 回傳提供播放器播放，否則發出錯誤訊息。
         selectItem.flatMap { item -> AnyPublisher<Result<VideoItem, AppError>, Never> in
             if item.source.url != nil {
                 return Just(.success(item)).eraseToAnyPublisher()

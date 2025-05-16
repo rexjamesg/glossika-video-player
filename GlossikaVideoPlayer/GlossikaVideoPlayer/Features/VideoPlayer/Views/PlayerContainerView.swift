@@ -15,12 +15,12 @@ import SwiftUI
 struct PlayerContainerView: View {
     @Environment(\.dismiss) private var dismiss
     @StateObject var viewModel: PlayerContainerViewModel
+    
     @State var showControls = true
     @State var autoHideControlsTask: DispatchWorkItem?
     @State private var orientation = UIDeviceOrientation.unknown
 
     init(viewModel: PlayerContainerViewModel) {
-        // 使用外部注入的 VM 以支援延遲 load(url:)
         _viewModel = StateObject(wrappedValue: viewModel)
     }
 
@@ -37,7 +37,6 @@ struct PlayerContainerView: View {
 
                         if showControls {
                             setPlayerControlsViewBase()
-                                .transition(.opacity)
                         }
                     }
                     Spacer()
@@ -64,6 +63,11 @@ struct PlayerContainerView: View {
             DispatchQueue.main.async {
                 // 強制切回 portrait
                 AppDelegate.shared.rotateScreen(to: .portrait)
+            }
+        }
+        .onReceive(viewModel.$didPlayToEnd) { ended in
+            if ended {
+                showControls = true
             }
         }
         .onReceive(viewModel.orientationToRotate.compactMap { $0 }) { newOrientation in
@@ -107,7 +111,10 @@ private extension PlayerContainerView {
     }
 
     func setPlayerControlsViewBase() -> some View {
-        PlayerControlsViewBase(viewModel: viewModel)
+        //因ViewModel只有少數子View用不到的屬性，直接把VM注入環境，方便傳遞
+        PlayerControlsViewBase()
+            .environmentObject(viewModel)
+            .transition(.opacity)            
             .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 

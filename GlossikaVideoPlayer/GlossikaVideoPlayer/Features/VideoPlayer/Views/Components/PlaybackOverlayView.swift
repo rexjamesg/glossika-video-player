@@ -10,7 +10,7 @@ import SwiftUI
 // MARK: - PlaybackOverlayView
 
 struct PlaybackOverlayView: View {
-    @ObservedObject var viewModel: PlayerContainerViewModel
+    @EnvironmentObject var viewModel: PlayerContainerViewModel
 
     var body: some View {
         GeometryReader { geometry in
@@ -63,7 +63,8 @@ private extension PlaybackOverlayView {
                        height: 4)
 
             if viewModel.isReadyToPlay {
-                PlayerSlider(viewModel: viewModel)
+                PlayerSlider()
+                    .environmentObject(viewModel)
             }
         }
     }
@@ -82,7 +83,8 @@ private extension PlaybackOverlayView {
 
 struct PlaybackOverlayView_Previews: PreviewProvider {
     static var previews: some View {
-        PlaybackOverlayView(viewModel: PlayerContainerViewModel.mock)
+        PlaybackOverlayView()
+            .environmentObject(PlayerContainerViewModel.mock)
             .previewLayout(.sizeThatFits)
             .background(.gray)
     }

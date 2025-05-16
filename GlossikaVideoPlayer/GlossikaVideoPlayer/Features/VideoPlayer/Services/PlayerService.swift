@@ -58,13 +58,13 @@ final class PlayerService: ObservableObject {
     @Published var duration: Double = 1
     @Published var bufferProgress: Double = 0
     @Published var isReadyToPlay = false
+    @Published private(set) var didPlayToEnd = false
 
     init(url: URL) {
         player = AVPlayer(url: url)
         // 取消 AVPlayer 自動停頓以最小化緩衝
-        player.automaticallyWaitsToMinimizeStalling = false
-        // 設定零預取，完全由自己控制 buffer 行為
-        player.currentItem?.preferredForwardBufferDuration = 0
+        player.automaticallyWaitsToMinimizeStalling = false        
+        player.currentItem?.preferredForwardBufferDuration = 5
 
         bind()
         observeTime()
@@ -154,6 +154,18 @@ private extension PlayerService {
                 }
             }
             .store(in: &cancellables)
+
+        if let playerItem = player.currentItem {
+            NotificationCenter.default.publisher(
+                for: .AVPlayerItemDidPlayToEndTime,
+                object: playerItem
+            )
+            .sink { [weak self] _ in
+                guard let self = self else { return }
+                self.didPlayToEnd = true
+            }
+            .store(in: &cancellables)
+        }
     }
 
     func observeTime() {

@@ -10,7 +10,7 @@ import SwiftUI
 // MARK: - PlayerControlsViewBase
 
 struct PlayerControlsViewBase: View {
-    @ObservedObject var viewModel: PlayerContainerViewModel
+    @EnvironmentObject var viewModel: PlayerContainerViewModel
 
     var body: some View {
         ZStack {
@@ -23,9 +23,11 @@ struct PlayerControlsViewBase: View {
                     }
                 }
                 Spacer()
-                PlaybackOverlayView(viewModel: viewModel)
+                PlaybackOverlayView()
+                    .environmentObject(viewModel)
             }
-            PlayerControlsView(viewModel: viewModel)
+            PlayerControlsView()
+                .environmentObject(viewModel)
         }
         .background(.black.opacity(0.6))
         .padding(.bottom, 0)
@@ -48,7 +50,8 @@ private extension PlayerControlsViewBase {
 
 struct PlayerControlsViewBase_Previews: PreviewProvider {
     static var previews: some View {
-        PlayerControlsViewBase(viewModel: PlayerContainerViewModel.mock)
+        PlayerControlsViewBase()
+            .environmentObject(PlayerContainerViewModel.mock)
             .previewLayout(.sizeThatFits)
     }
 }

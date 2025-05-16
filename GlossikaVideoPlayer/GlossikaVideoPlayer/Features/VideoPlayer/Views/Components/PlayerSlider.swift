@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct PlayerSlider: View {
-    @ObservedObject var viewModel: PlayerContainerViewModel
+    @EnvironmentObject var viewModel: PlayerContainerViewModel
 
     var body: some View {
         Slider(value: Binding(
@@ -37,6 +37,6 @@ struct PlayerSlider: View {
 
 struct PlayerSlider_Previews: PreviewProvider {
     static var previews: some View {
-        PlayerSlider(viewModel: PlayerContainerViewModel.mock)
+        PlayerSlider().environmentObject(PlayerContainerViewModel.mock)
     }
 }

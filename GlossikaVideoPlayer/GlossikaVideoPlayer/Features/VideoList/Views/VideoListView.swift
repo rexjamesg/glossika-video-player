@@ -59,7 +59,6 @@ struct VideoListView: View {
 // MARK: - Private Methods
 
 private extension VideoListView {
-    //工廠方法
     func makePlayerContainerView(item: VideoItem) -> some View {
         let viewModel = PlayerContainerViewModel()
         viewModel.loadVideo.send(item)
